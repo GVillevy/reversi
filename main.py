@@ -1,12 +1,14 @@
 import Reversi
 from random import choice
+import random
+
 
 #Renvoie une valeur, pour un joueur donner, si il est bien parti
 #dans la partie ou non
 # => la valeur est juste le nombre de pièce en plus ou en moins qu'il a
 # face à son adversaire
 def evaluate(board,joueur):
-    return board.heuristique(joueur)
+    return board.heuristique_ameliore(joueur)
 
 #Pour le moment, les joueurs jouent de façon aléatoire
 def RandomMove(board):
@@ -46,6 +48,7 @@ def minimax(board,profondeur,player,alpha,beta):
                 break
         return min_eval
 
+#Ici, notre algorithme est très déterministe. Nous allons ajouté du noise afin d'avoir un peu d'hasard dans le choix du meilleur coup
 def best_move(board,profondeur,player):
     legal_moves = board.legal_moves()
     best_score = float('-inf')
@@ -55,8 +58,11 @@ def best_move(board,profondeur,player):
         score = minimax(board, profondeur - 1, player, float('-inf'), float('inf'))
         board.pop()
 
-        if score > best_score:
-            best_score = score
+        # ajout du noise afin d'avoir un peu d'hasard dans le choix du meilleur coup
+        perturbation = random.uniform(-0.1, 0.1)
+
+        if score+perturbation > best_score:
+            best_score = score+perturbation
             best_move = move
 
     return best_move
@@ -65,7 +71,7 @@ def best_move(board,profondeur,player):
 
 nb_victoire_noir = 0
 nb_victoire_blanc = 0
-for j in range(20):
+for j in range(1):
     #Création de la partie
     print("•••••••••••••••••••••••••")
     print("•••••••••••••••••••••••••")

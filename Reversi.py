@@ -213,26 +213,28 @@ class Board:
         if player is None:
             player = self._nextPlayer
 
+        # Coins et Côtés
+        weight_corners = 6
+        weight_sides = 3
 
-        # # Coins et Côtés
-        # weight_corners = 5
-        # weight_sides = 2
+        corners_player = sum(1 for corner in [(0, 0), (0, self._boardsize - 1), (self._boardsize - 1, 0), (self._boardsize - 1, self._boardsize - 1)] if self._board[corner[0]][corner[1]] == player)
 
-        # corners_player = sum(1 for corner in [(0, 0), (0, self._boardsize - 1), (self._boardsize - 1, 0), (self._boardsize - 1, self._boardsize - 1)] if self._board[corner[0]][corner[1]] == player)
-
-        # sides_player = sum(1 for side in [(0, i) for i in range(1, self._boardsize - 1)] + [(self._boardsize - 1, i) for i in range(1, self._boardsize - 1)] + [(i, 0) for i in range(1, self._boardsize - 1)] + [(i, self._boardsize - 1) for i in range(1, self._boardsize - 1)] if self._board[side[0]][side[1]] == player)
+        sides_player = sum(1 for side in [(0, i) for i in range(1, self._boardsize - 1)] + [(self._boardsize - 1, i) for i in range(1, self._boardsize - 1)] + [(i, 0) for i in range(1, self._boardsize - 1)] + [(i, self._boardsize - 1) for i in range(1, self._boardsize - 1)] if self._board[side[0]][side[1]] == player)
 
         legal_moves = self.legal_moves()
-        mobility_score = len(legal_moves)
-
-        # Évaluation finale
-        # evaluation = count_player - count_opponent + weight_corners * corners_player + weight_sides * sides_player
+        mobility_score = 2*len(legal_moves)
 
         # Ajustez le score en fonction du joueur (peut être personnalisé)
         if player == self._WHITE:
-            return self._nbWHITE - self._nbBLACK + mobility_score
+            return self._nbWHITE - self._nbBLACK + mobility_score + weight_corners * corners_player + weight_sides * sides_player
         else:
-            return self._nbBLACK - self._nbWHITE + mobility_score
+            return self._nbBLACK - self._nbWHITE + mobility_score + weight_corners * corners_player + weight_sides * sides_player
+
+
+
+
+
+
 
     def _piece2str(self, c):
         if c==self._WHITE:
