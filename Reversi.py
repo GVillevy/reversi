@@ -207,6 +207,32 @@ class Board:
         if player is self._WHITE:
             return self._nbWHITE - self._nbBLACK
         return self._nbBLACK - self._nbWHITE
+    
+    # Exemple d'heuristique plus poussée : compte les pièces et ajoute un poids pour les pièces se trouvant en bordure et dans les coins ( position stratégique)
+    def heuristique_ameliore(self, player=None):
+        if player is None:
+            player = self._nextPlayer
+
+
+        # # Coins et Côtés
+        # weight_corners = 5
+        # weight_sides = 2
+
+        # corners_player = sum(1 for corner in [(0, 0), (0, self._boardsize - 1), (self._boardsize - 1, 0), (self._boardsize - 1, self._boardsize - 1)] if self._board[corner[0]][corner[1]] == player)
+
+        # sides_player = sum(1 for side in [(0, i) for i in range(1, self._boardsize - 1)] + [(self._boardsize - 1, i) for i in range(1, self._boardsize - 1)] + [(i, 0) for i in range(1, self._boardsize - 1)] + [(i, self._boardsize - 1) for i in range(1, self._boardsize - 1)] if self._board[side[0]][side[1]] == player)
+
+        legal_moves = self.legal_moves()
+        mobility_score = len(legal_moves)
+
+        # Évaluation finale
+        # evaluation = count_player - count_opponent + weight_corners * corners_player + weight_sides * sides_player
+
+        # Ajustez le score en fonction du joueur (peut être personnalisé)
+        if player == self._WHITE:
+            return self._nbWHITE - self._nbBLACK + mobility_score
+        else:
+            return self._nbBLACK - self._nbWHITE + mobility_score
 
     def _piece2str(self, c):
         if c==self._WHITE:
