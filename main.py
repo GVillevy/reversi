@@ -70,7 +70,7 @@ def IAIterativeDeepening(board, tempsmax, player,debut):
     profondeur = 1
     meilleurmove = None
 
-    while time.time() - debut < tempsmax:
+    while time.time() - debut < tempsmax and profondeur<10:
         print("couche atteinte : ", profondeur)
         move = best_move(board, profondeur, player,debut,tempsmax)
         if move is not None:
@@ -99,14 +99,35 @@ for j in range(nombre_partie):
     while not board.is_game_over():
 
         if board._nextPlayer == Reversi.Board._BLACK:
-            debut= time.time()
-            print("début de la recherche:",debut)
-            move = IAIterativeDeepening(board, 10, Reversi.Board._BLACK,debut)
-            print("durée totale de recherche : ", time.time()-debut)
+            # debut= time.time()
+            # print("début de la recherche:",debut)
+            # move = IAIterativeDeepening(board, 10, Reversi.Board._BLACK,debut)
+            # print(move)
+            # print("durée totale de recherche : ", time.time()-debut) 
+            validmove = False
+
+            while validmove == False and not board.is_game_over():
+                moves = board.legal_moves()
+                for element in moves:
+                    element.pop(0)
+                print("liste de coups possible : ", moves)
+                user_input = input("Entrez votre mouvement (par exemple, '13') pour ligne 1 colonne 3 : ")
+                ligne = list(user_input)[0]
+                colonne = list(user_input)[1]
+
+                if(board.is_valid_move(Reversi.Board._BLACK,int(ligne),int(colonne))):
+                    validmove = True
+                    move = [1,int(ligne),int(colonne)]
+                    print(move)
+                else:
+                    print("Coup invalide, re-tentez")
+
+            #move = RandomMove(board)
         else:
             debut= time.time()
             print("début de la recherche:",debut)
             move = IAIterativeDeepening(board, 10, Reversi.Board._WHITE,debut)
+            print(move)
             print("durée totale de recherche : ", time.time()-debut)
 
         board.push(move)

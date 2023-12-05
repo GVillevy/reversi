@@ -233,18 +233,24 @@ class Board:
 
     def _piece2str(self, c):
         if c==self._WHITE:
-            return 'O'
+            return ' O '
         elif c==self._BLACK:
-            return 'X'
+            return ' X '
         else:
-            return '.'
+            return ' . '
 
     def __str__(self):
-        toreturn=""
+        numligne = 0
+
+        toreturn="  0  1  2  3  4  5  6  7"
+        toreturn+="\n"
         for l in self._board:
+            # print(numligne)
+            toreturn+=str(numligne)
             for c in l:
                 toreturn += self._piece2str(c)
             toreturn += "\n"
+            numligne=numligne+1
         toreturn += "Next player: " + ("BLACK" if self._nextPlayer == self._BLACK else "WHITE") + "\n"
         toreturn += str(self._nbBLACK) + " blacks and " + str(self._nbWHITE) + " whites on board\n"
         toreturn += "(successive pass: " + str(self._successivePass) + " )"
