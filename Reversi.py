@@ -214,7 +214,7 @@ class Board:
             player = self._nextPlayer
 
         # Coins et Côtés
-        weight_corners = 6
+        weight_corners = 5
         weight_sides = 3
 
         corners_player = sum(1 for corner in [(0, 0), (0, self._boardsize - 1), (self._boardsize - 1, 0), (self._boardsize - 1, self._boardsize - 1)] if self._board[corner[0]][corner[1]] == player)
@@ -229,11 +229,6 @@ class Board:
             return self._nbWHITE - self._nbBLACK + mobility_score + weight_corners * corners_player + weight_sides * sides_player
         else:
             return self._nbBLACK - self._nbWHITE + mobility_score + weight_corners * corners_player + weight_sides * sides_player
-
-
-
-
-
 
 
     def _piece2str(self, c):

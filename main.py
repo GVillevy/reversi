@@ -1,46 +1,38 @@
 import Reversi
 from random import choice
 import random
+import time
 
-
-#Renvoie une valeur, pour un joueur donner, si il est bien parti
-#dans la partie ou non
-# => la valeur est juste le nombre de pièce en plus ou en moins qu'il a
-# face à son adversaire
-def evaluate(board,joueur):
+#On evalue la situation avec notre heuristique
+def evaluate(board, joueur):
     return board.heuristique_ameliore(joueur)
 
 #Pour le moment, les joueurs jouent de façon aléatoire
 def RandomMove(board):
     return choice(board.legal_moves())
 
-#Algorithme mini-max :
-def minimax(board,profondeur,player,alpha,beta):
-    if profondeur == 0 or board.is_game_over():
-        return evaluate(board,player)
-    
+def minimax(board, profondeur, player, alpha, beta,debut,tempsmax):
+    if profondeur == 0 or board.is_game_over() or time.time() - debut > tempsmax:
+        return evaluate(board, player)
+
     legal_moves = board.legal_moves()
 
-    #Pour le joueur noir, nous voulons maximiser le score
     if player == Reversi.Board._BLACK:
         max_eval = float('-inf')
         for move in legal_moves:
             board.push(move)
-            eval = minimax(board,profondeur - 1,player,alpha,beta)
+            eval = minimax(board, profondeur - 1, player, alpha, beta,debut,tempsmax)
             board.pop()
-
             max_eval = max(max_eval, eval)
             alpha = max(alpha, eval)
             if beta <= alpha:
                 break
         return max_eval
-    
     else:
-        #Pour le joueur blanc, nous voulons minimiser le score
         min_eval = float('inf')
         for move in legal_moves:
             board.push(move)
-            eval = minimax(board, profondeur - 1, player, alpha, beta)
+            eval = minimax(board, profondeur - 1, player, alpha, beta,debut,tempsmax)
             board.pop()
             min_eval = min(min_eval, eval)
             beta = min(beta, eval)
@@ -48,68 +40,86 @@ def minimax(board,profondeur,player,alpha,beta):
                 break
         return min_eval
 
-#Ici, notre algorithme est très déterministe. Nous allons ajouté du noise afin d'avoir un peu d'hasard dans le choix du meilleur coup
-def best_move(board,profondeur,player):
+
+
+def best_move(board, profondeur, player,debut,tempsmax):
+
     legal_moves = board.legal_moves()
+    selected_move = None
     best_score = float('-inf')
-
+    
     for move in legal_moves:
-        board.push(move)
-        score = minimax(board, profondeur - 1, player, float('-inf'), float('inf'))
-        board.pop()
+        if time.time() - debut < tempsmax:
+            board.push(move)
+            score = minimax(board, profondeur - 1, player, float('-inf'), float('inf'),debut,tempsmax)
+            board.pop()
 
-        # ajout du noise afin d'avoir un peu d'hasard dans le choix du meilleur coup
-        perturbation = random.uniform(-0.1, 0.1)
+            # ajout du noise afin d'avoir un peu d'hasard dans le choix du meilleur coup
+            perturbation = random.uniform(-0.1, 0.1)
 
-        if score+perturbation > best_score:
-            best_score = score+perturbation
-            best_move = move
+            if score + perturbation > best_score:
+                best_score = score + perturbation
+                selected_move = move
+    return selected_move
 
-    return best_move
+
+
+
+def IAIterativeDeepening(board, tempsmax, player,debut):
+
+    profondeur = 1
+    meilleurmove = None
+
+    while time.time() - debut < tempsmax:
+        print("couche atteinte : ", profondeur)
+        move = best_move(board, profondeur, player,debut,tempsmax)
+        if move is not None:
+            meilleurmove = move
+        else:
+            break  # Sortir de la boucle si aucune réponse trouvée à cette profondeur
+        profondeur += 1
+    return meilleurmove
+
+
+
 
 
 
 nb_victoire_noir = 0
 nb_victoire_blanc = 0
-for j in range(1):
-    #Création de la partie
-    print("•••••••••••••••••••••••••")
-    print("•••••••••••••••••••••••••")
-    print("•••••••••••••••••••••••••")
-    print("••••••••••Début••••••••••")
-    print("•••••••••••••••••••••••••")
-    print("•••••••••••••••••••••••••")
-    print("•••••••••••••••••••••••••")
+
+#On fait jouer plusieurs parties
+nombre_partie = 10
+
+for j in range(nombre_partie):
+
     board = Reversi.Board()
     print(board)
-    print("Chance de gagner de black (gentil) : ",evaluate(board,Reversi.Board._BLACK))
-    print("Chance de gagner de white (méchant) : ",evaluate(board,Reversi.Board._WHITE))
 
-    #Tant que la partie n'est pas fini, les joueurs jouent
-    while board.is_game_over() == False:
+    while not board.is_game_over():
 
         if board._nextPlayer == Reversi.Board._BLACK:
-            move = best_move(board, 3, Reversi.Board._BLACK)  # Profondeur de recherche 3 (ajustez selon les performances)
-            board.push(move)
-            # board.push(RandomMove(board))
-        # Joueur blanc (IA) joue avec l'algorithme Minimax
+            debut= time.time()
+            print("début de la recherche:",debut)
+            move = IAIterativeDeepening(board, 10, Reversi.Board._BLACK,debut)
+            print("durée totale de recherche : ", time.time()-debut)
         else:
-            move = best_move(board, 3, Reversi.Board._WHITE)  # Profondeur de recherche 3 (ajustez selon les performances)
-            board.push(move)
-            # board.push(RandomMove(board))
+            debut= time.time()
+            print("début de la recherche:",debut)
+            move = IAIterativeDeepening(board, 10, Reversi.Board._WHITE,debut)
+            print("durée totale de recherche : ", time.time()-debut)
 
+        board.push(move)
         print(board)
-        print("Chance de gagner de black (gentil) : ",evaluate(board,Reversi.Board._BLACK))
-        print("Chance de gagner de white (méchant) : ",evaluate(board,Reversi.Board._WHITE))
 
+        print("Chance de gagner de black (gentil) : ", evaluate(board, Reversi.Board._BLACK))
+        print("Chance de gagner de white (méchant) : ", evaluate(board, Reversi.Board._WHITE))
 
-
-    #On compte le nombre de pièce et on déduit un vainqueur
-    if board._nbBLACK>board._nbWHITE:
-        nb_victoire_noir = nb_victoire_noir+1
-        print("Les noirs ont gagnés")
+    if board._nbBLACK > board._nbWHITE:
+        nb_victoire_noir += 1
+        print("Les noirs ont gagné")
     else:
-        nb_victoire_blanc = nb_victoire_blanc+1
-        print("Les blancs ont gagnés")
+        nb_victoire_blanc += 1
+        print("Les blancs ont gagné")
 
-print("nombre de victoire de l'ia : ",nb_victoire_blanc," , nombre victoire de noir : ", nb_victoire_noir)
+print("Nombre de victoires de l'IA : ", nb_victoire_blanc, ", nombre de victoires de noir : ", nb_victoire_noir)
