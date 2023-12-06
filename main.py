@@ -89,7 +89,7 @@ nb_victoire_noir = 0
 nb_victoire_blanc = 0
 
 #On fait jouer plusieurs parties
-nombre_partie = 10
+nombre_partie = 1
 
 for j in range(nombre_partie):
 
@@ -101,9 +101,11 @@ for j in range(nombre_partie):
         if board._nextPlayer == Reversi.Board._BLACK:
             # debut= time.time()
             # print("début de la recherche:",debut)
-            # move = IAIterativeDeepening(board, 10, Reversi.Board._BLACK,debut)
+            # move = IAIterativeDeepening(board, 5, Reversi.Board._BLACK,debut)
             # print(move)
             # print("durée totale de recherche : ", time.time()-debut) 
+
+            
             validmove = False
 
             while validmove == False and not board.is_game_over():
@@ -111,22 +113,33 @@ for j in range(nombre_partie):
                 for element in moves:
                     element.pop(0)
                 print("liste de coups possible : ", moves)
-                user_input = input("Entrez votre mouvement (par exemple, '13') pour ligne 1 colonne 3 : ")
-                ligne = list(user_input)[0]
-                colonne = list(user_input)[1]
 
-                if(board.is_valid_move(Reversi.Board._BLACK,int(ligne),int(colonne))):
-                    validmove = True
-                    move = [1,int(ligne),int(colonne)]
-                    print(move)
+                while True:
+                    try:
+                        user_input = input("Entrez votre mouvement (par exemple, '13') pour ligne 1 colonne 3 : ")
+                        test = int(user_input)
+                        break
+                    except ValueError:
+                        print('Veuillez entrer un entier valide.')
+
+                user_input = str(user_input)
+                if len(list(user_input)) != 2 :
+                    print("veuillez entrer un coup valide")
                 else:
-                    print("Coup invalide, re-tentez")
+                    ligne = list(user_input)[0]
+                    colonne = list(user_input)[1]
+                    if(board.is_valid_move(Reversi.Board._BLACK,int(ligne),int(colonne))):
+                        validmove = True
+                        move = [1,int(ligne),int(colonne)]
+                        print(move)
+                    else:
+                        print("Coup invalide, re-tentez")
 
             #move = RandomMove(board)
         else:
             debut= time.time()
             print("début de la recherche:",debut)
-            move = IAIterativeDeepening(board, 10, Reversi.Board._WHITE,debut)
+            move = IAIterativeDeepening(board, 5, Reversi.Board._WHITE,debut)
             print(move)
             print("durée totale de recherche : ", time.time()-debut)
 

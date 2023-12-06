@@ -222,12 +222,14 @@ class Board:
         sides_player = sum(1 for side in [(0, i) for i in range(1, self._boardsize - 1)] + [(self._boardsize - 1, i) for i in range(1, self._boardsize - 1)] + [(i, 0) for i in range(1, self._boardsize - 1)] + [(i, self._boardsize - 1) for i in range(1, self._boardsize - 1)] if self._board[side[0]][side[1]] == player)
 
         legal_moves = self.legal_moves()
-        mobility_score = 2*len(legal_moves)
+        mobility_score = len(legal_moves)
 
         # Ajustez le score en fonction du joueur (peut être personnalisé)
         if player == self._WHITE:
+            #print("jeton dif : ",self._nbWHITE - self._nbBLACK," - mobility score : ",mobility_score," - corner : ",weight_corners * corners_player," - side : ", weight_sides * sides_player)
             return self._nbWHITE - self._nbBLACK + mobility_score + weight_corners * corners_player + weight_sides * sides_player
         else:
+            #print("jeton dif : ",self._nbWHITE - self._nbBLACK," - mobility score : ",mobility_score," - corner : ",weight_corners * corners_player," - side : ", weight_sides * sides_player)
             return self._nbBLACK - self._nbWHITE + mobility_score + weight_corners * corners_player + weight_sides * sides_player
 
 
