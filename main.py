@@ -7,7 +7,7 @@ import time
 def evaluate(board, joueur):
     return board.heuristique_ameliore(joueur)
 
-#Pour le moment, les joueurs jouent de façon aléatoire
+#Pour faire jouer le joueur de façon aléatoire
 def RandomMove(board):
     return choice(board.legal_moves())
 
@@ -15,6 +15,7 @@ def minimax(board, profondeur, player, alpha, beta,debut,tempsmax):
     if profondeur == 0 or board.is_game_over() or time.time() - debut > tempsmax:
         return evaluate(board, player)
 
+    print("temps restant : ",int(10 - (time.time() - debut)) % 10,end="\r")
     legal_moves = board.legal_moves()
 
     if player == Reversi.Board._BLACK:
@@ -70,14 +71,14 @@ def IAIterativeDeepening(board, tempsmax, player,debut):
     profondeur = 1
     meilleurmove = None
 
-    while time.time() - debut < tempsmax and profondeur<10:
-        print("couche atteinte : ", profondeur)
+    while time.time() - debut < tempsmax:
         move = best_move(board, profondeur, player,debut,tempsmax)
         if move is not None:
             meilleurmove = move
         else:
             break  # Sortir de la boucle si aucune réponse trouvée à cette profondeur
         profondeur += 1
+    print("couche atteinte : ", profondeur)
     return meilleurmove
 
 
@@ -89,7 +90,7 @@ nb_victoire_noir = 0
 nb_victoire_blanc = 0
 
 #On fait jouer plusieurs parties
-nombre_partie = 1
+nombre_partie = 10
 
 for j in range(nombre_partie):
 
@@ -99,19 +100,19 @@ for j in range(nombre_partie):
     while not board.is_game_over():
 
         if board._nextPlayer == Reversi.Board._BLACK:
-            # debut= time.time()
-            # print("début de la recherche:",debut)
-            # move = IAIterativeDeepening(board, 5, Reversi.Board._BLACK,debut)
-            # print(move)
-            # print("durée totale de recherche : ", time.time()-debut) 
 
-            
+            moves = board.legal_moves()
+
+            if not moves or (moves[0][1] == -1 and not board.is_game_over()):
+                print("Aucun coup possible. Fin de la partie.")
+                break
+
             validmove = False
 
-            while validmove == False and not board.is_game_over():
-                moves = board.legal_moves()
+            while not validmove:
                 for element in moves:
-                    element.pop(0)
+                    if len(element) == 3:
+                        element.pop(0)
                 print("liste de coups possible : ", moves)
 
                 while True:
@@ -123,31 +124,39 @@ for j in range(nombre_partie):
                         print('Veuillez entrer un entier valide.')
 
                 user_input = str(user_input)
-                if len(list(user_input)) != 2 :
+                if len(list(user_input)) != 2:
                     print("veuillez entrer un coup valide")
-                else:
-                    ligne = list(user_input)[0]
-                    colonne = list(user_input)[1]
-                    if(board.is_valid_move(Reversi.Board._BLACK,int(ligne),int(colonne))):
-                        validmove = True
-                        move = [1,int(ligne),int(colonne)]
-                        print(move)
-                    else:
-                        print("Coup invalide, re-tentez")
+                    continue
 
+                ligne = list(user_input)[0]
+                colonne = list(user_input)[1]
+
+                if board.is_valid_move(Reversi.Board._BLACK, int(ligne), int(colonne)):
+                    validmove = True
+                    move = [1, int(ligne), int(colonne)]
+                else:
+                    print("Coup invalide, re-tentez")
+
+            #DECOMMENTER ICI POUR FAIRE JOUER UNE IA RANDOM
             #move = RandomMove(board)
+
+            #DECOMMENTER ICI POUR FAIRE AFFRONTER DEUX IA AVEC L'HEURISTIQUE AVANCÉE
+            # debut= time.time()
+            # move = IAIterativeDeepening(board, 10, Reversi.Board._BLACK,debut)
+            # print("durée totale de recherche : ", time.time()-debut)
+
         else:
             debut= time.time()
-            print("début de la recherche:",debut)
-            move = IAIterativeDeepening(board, 5, Reversi.Board._WHITE,debut)
-            print(move)
+            move = IAIterativeDeepening(board, 0.5, Reversi.Board._WHITE,debut)
             print("durée totale de recherche : ", time.time()-debut)
 
         board.push(move)
         print(board)
 
-        print("Chance de gagner de black (gentil) : ", evaluate(board, Reversi.Board._BLACK))
-        print("Chance de gagner de white (méchant) : ", evaluate(board, Reversi.Board._WHITE))
+        if evaluate(board, Reversi.Board._BLACK) > evaluate(board, Reversi.Board._WHITE):
+            print("Joueur noir (vous) a plus de chance de gagner")
+        else:
+            print("Joueur blanc (IA) a plus de chance de gagner")
 
     if board._nbBLACK > board._nbWHITE:
         nb_victoire_noir += 1

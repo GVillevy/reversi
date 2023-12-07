@@ -12,7 +12,7 @@ class Board:
     _EMPTY = 0
 
     # Attention, la taille du plateau est donnée en paramètre
-    def __init__(self, boardsize = 8):
+    def __init__(self, boardsize = 10):
       self._nbWHITE = 2
       self._nbBLACK = 2
       self._nextPlayer = self._BLACK
@@ -213,24 +213,53 @@ class Board:
         if player is None:
             player = self._nextPlayer
 
-        # Coins et Côtés
-        weight_corners = 5
-        weight_sides = 3
-
-        corners_player = sum(1 for corner in [(0, 0), (0, self._boardsize - 1), (self._boardsize - 1, 0), (self._boardsize - 1, self._boardsize - 1)] if self._board[corner[0]][corner[1]] == player)
-
-        sides_player = sum(1 for side in [(0, i) for i in range(1, self._boardsize - 1)] + [(self._boardsize - 1, i) for i in range(1, self._boardsize - 1)] + [(i, 0) for i in range(1, self._boardsize - 1)] + [(i, self._boardsize - 1) for i in range(1, self._boardsize - 1)] if self._board[side[0]][side[1]] == player)
-
         legal_moves = self.legal_moves()
         mobility_score = len(legal_moves)
+        corners_player = sum(1 for corner in [(0, 0), (0, self._boardsize - 1), (self._boardsize - 1, 0), (self._boardsize - 1, self._boardsize - 1)] if self._board[corner[0]][corner[1]] == player)
+        sides_player = sum(1 for side in [(0, i) for i in range(1, self._boardsize - 1)] + [(self._boardsize - 1, i) for i in range(1, self._boardsize - 1)] + [(i, 0) for i in range(1, self._boardsize - 1)] + [(i, self._boardsize - 1) for i in range(1, self._boardsize - 1)] if self._board[side[0]][side[1]] == player)
 
         # Ajustez le score en fonction du joueur (peut être personnalisé)
+        #Player blanc = IA
         if player == self._WHITE:
-            #print("jeton dif : ",self._nbWHITE - self._nbBLACK," - mobility score : ",mobility_score," - corner : ",weight_corners * corners_player," - side : ", weight_sides * sides_player)
-            return self._nbWHITE - self._nbBLACK + mobility_score + weight_corners * corners_player + weight_sides * sides_player
+            difjeton = self._nbWHITE - self._nbBLACK
+                            
+            #Si l'IA a plus de jeton que nous, il va jouer très aggressif
+            if self._nbWHITE > self._nbBLACK:
+                
+                # Coins et Côtés
+                weight_corners = 5
+                weight_sides = 2
+                weight_difjeton = 5
+                weight_mobility = 1
+
+            #Sinon, elle va jouer défensif, en jouant les coins et coté
+            else:
+                # Coins et Côtés
+                weight_corners = 8
+                weight_sides = 4
+                weight_difjeton = 4
+                weight_mobility = 2
+
         else:
-            #print("jeton dif : ",self._nbWHITE - self._nbBLACK," - mobility score : ",mobility_score," - corner : ",weight_corners * corners_player," - side : ", weight_sides * sides_player)
-            return self._nbBLACK - self._nbWHITE + mobility_score + weight_corners * corners_player + weight_sides * sides_player
+            difjeton = self._nbBLACK - self._nbWHITE
+            #Si l'IA a plus de jeton que nous, il va jouer très aggressif
+            if self._nbWHITE < self._nbBLACK:
+                
+                # Coins et Côtés
+                weight_corners = 2.5
+                weight_sides = 1.5
+                weight_difjeton = 4
+                weight_mobility = 2
+            
+            #Sinon, elle va jouer défensif, en jouant les coins et coté
+            else:
+                # Coins et Côtés
+                weight_corners = 5
+                weight_sides = 3
+                weight_difjeton = 2
+                weight_mobility = 3
+        return (weight_difjeton * difjeton) + (weight_mobility * mobility_score) + (weight_corners * corners_player) + (weight_sides * sides_player)
+        
 
 
     def _piece2str(self, c):
@@ -244,14 +273,14 @@ class Board:
     def __str__(self):
         numligne = 0
 
-        toreturn="  0  1  2  3  4  5  6  7"
+        toreturn="  0  1  2  3  4  5  6  7  8  9"
         toreturn+="\n"
         for l in self._board:
             # print(numligne)
             toreturn+=str(numligne)
             for c in l:
                 toreturn += self._piece2str(c)
-            toreturn += "\n"
+            toreturn += "\n\n"
             numligne=numligne+1
         toreturn += "Next player: " + ("BLACK" if self._nextPlayer == self._BLACK else "WHITE") + "\n"
         toreturn += str(self._nbBLACK) + " blacks and " + str(self._nbWHITE) + " whites on board\n"
