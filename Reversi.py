@@ -208,7 +208,14 @@ class Board:
             return self._nbWHITE - self._nbBLACK
         return self._nbBLACK - self._nbWHITE
     
-    # Exemple d'heuristique plus poussée : compte les pièces et ajoute un poids pour les pièces se trouvant en bordure et dans les coins ( position stratégique)
+    # Exemple d'heuristique plus poussée
+    # Notre IA donnera plus de valeur aux pièces se trouvant dans les coins de la grille de jeu, ou sur les côtés.
+    # Elle donnera également plus de valeur aux coups lui permettant d'avoir le plus de choix possible dans le futur
+    # Et comme l'heuristique de base, elle donnera plus de valeurs aux coups lui permettant d'augmenter son écart de pièce avec l'adversaire
+    # Nous avons implémenté deux modes pour notre IA : si elle a l'avantage sur l'adversaire sur le nombre de pièces, elle va jouer 
+    # aggressivement afin d'éliminer l'adversaire plus rapidement. Si notre IA est entrain de perdre la partie, elle va jouer plus
+    # défensivement, en essayant de maximiser son nombre de possibilité de coup dans le futur et en jouant d'avantage les coins et côtés,
+    # position lui permettant une meilleur stabilité car ce sont des pièces plus difficile à récupérer pour l'adversaire.
     def heuristique_ameliore(self, player=None):
         if player is None:
             player = self._nextPlayer
@@ -224,6 +231,7 @@ class Board:
             difjeton = self._nbWHITE - self._nbBLACK
                             
             #Si l'IA a plus de jeton que nous, il va jouer très aggressif
+            #On va essayer de maximiser les coups qui nous permettent de creuser l'écart de jeton avec l'adversaire
             if self._nbWHITE > self._nbBLACK:
                 
                 # Coins et Côtés
@@ -232,7 +240,9 @@ class Board:
                 weight_difjeton = 5
                 weight_mobility = 1
 
-            #Sinon, elle va jouer défensif, en jouant les coins et coté
+            #Sinon, elle va jouer défensif, en jouant les coins et coté 
+            # On va également essayé d'augmenter notre "mobilité", c-a-d notre nombre de coups possibles dans le futur, afin d'avoir plus
+            # de choix
             else:
                 # Coins et Côtés
                 weight_corners = 8
@@ -240,6 +250,8 @@ class Board:
                 weight_difjeton = 4
                 weight_mobility = 2
 
+        #La même chose que pour le joueur blanc mais ici c'est pour le joueur noir (j'expérimentais des valeurs de poids ici puis je
+        # faisais jouer l'IA noir contre l'IA blanc afin de trouver les meilleurs poids possibles)
         else:
             difjeton = self._nbBLACK - self._nbWHITE
             #Si l'IA a plus de jeton que nous, il va jouer très aggressif

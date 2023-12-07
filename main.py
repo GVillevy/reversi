@@ -3,14 +3,19 @@ from random import choice
 import random
 import time
 
-#On evalue la situation avec notre heuristique
+#On evalue la situation avec notre heuristique présente dans le fichier Reversi.py
 def evaluate(board, joueur):
     return board.heuristique_ameliore(joueur)
+
 
 #Pour faire jouer le joueur de façon aléatoire
 def RandomMove(board):
     return choice(board.legal_moves())
 
+
+#Algorithme minimax permettant d'explorer notre arbre de jeu de façon récursif en utilisant l'étalage alpha-beta
+#permettant de réduire le nombre de noeud à explorer. Notre algorithme évalue la position actuelle sur le plateau
+#grace à notre fonction evaluate
 def minimax(board, profondeur, player, alpha, beta,debut,tempsmax):
     if profondeur == 0 or board.is_game_over() or time.time() - debut > tempsmax:
         return evaluate(board, player)
@@ -18,6 +23,7 @@ def minimax(board, profondeur, player, alpha, beta,debut,tempsmax):
     print("temps restant : ",int(10 - (time.time() - debut)) % 10,end="\r")
     legal_moves = board.legal_moves()
 
+    #Si le joueur Black(nous) joue, on cherche à maximiser la valeur
     if player == Reversi.Board._BLACK:
         max_eval = float('-inf')
         for move in legal_moves:
@@ -29,6 +35,7 @@ def minimax(board, profondeur, player, alpha, beta,debut,tempsmax):
             if beta <= alpha:
                 break
         return max_eval
+    #Si c'est le joueur blanc (IA) qui joue, on cherche à minimiser la valeur
     else:
         min_eval = float('inf')
         for move in legal_moves:
@@ -42,13 +49,14 @@ def minimax(board, profondeur, player, alpha, beta,debut,tempsmax):
         return min_eval
 
 
-
+# Fonction qui cherche à trouver le meilleur coup à jouer dans une situation précise
 def best_move(board, profondeur, player,debut,tempsmax):
 
     legal_moves = board.legal_moves()
     selected_move = None
     best_score = float('-inf')
     
+    #On va prendre le score de chaque coup afin de garder le move avec le meilleur score
     for move in legal_moves:
         if time.time() - debut < tempsmax:
             board.push(move)
@@ -56,16 +64,19 @@ def best_move(board, profondeur, player,debut,tempsmax):
             board.pop()
 
             # ajout du noise afin d'avoir un peu d'hasard dans le choix du meilleur coup
+            # Sinon notre IA jouera toujours de la même facon dans une position précise
             perturbation = random.uniform(-0.1, 0.1)
 
             if score + perturbation > best_score:
                 best_score = score + perturbation
                 selected_move = move
+
     return selected_move
 
 
 
-
+# Fonction qui permet de chercher dans notre arbre selon notre compteur (ici 10 secondes par défaut)
+# Tant qu'il reste du temps, notre fonction augmentera la profondeur de recherche
 def IAIterativeDeepening(board, tempsmax, player,debut):
 
     profondeur = 1
@@ -82,9 +93,7 @@ def IAIterativeDeepening(board, tempsmax, player,debut):
     return meilleurmove
 
 
-
-
-
+# Programme principal : 
 
 nb_victoire_noir = 0
 nb_victoire_blanc = 0
@@ -98,23 +107,20 @@ for j in range(nombre_partie):
     print(board)
 
     while not board.is_game_over():
-
         if board._nextPlayer == Reversi.Board._BLACK:
-
             moves = board.legal_moves()
-
             if not moves or (moves[0][1] == -1 and not board.is_game_over()):
                 print("Aucun coup possible. Fin de la partie.")
                 break
-
             validmove = False
-
             while not validmove:
+                #On affiche les positions possibles à jouer pour aider l'utilisateur
                 for element in moves:
                     if len(element) == 3:
                         element.pop(0)
                 print("liste de coups possible : ", moves)
 
+                #On vérifie que notre utilisateur nous donne un entier
                 while True:
                     try:
                         user_input = input("Entrez votre mouvement (par exemple, '13') pour ligne 1 colonne 3 : ")
@@ -123,6 +129,7 @@ for j in range(nombre_partie):
                     except ValueError:
                         print('Veuillez entrer un entier valide.')
 
+                # Nous vérifions que l'utilisateur entre une ligne et une colonne sous forme d'entier
                 user_input = str(user_input)
                 if len(list(user_input)) != 2:
                     print("veuillez entrer un coup valide")
@@ -131,6 +138,7 @@ for j in range(nombre_partie):
                 ligne = list(user_input)[0]
                 colonne = list(user_input)[1]
 
+                #On vérifie si le move donné par l'utilisateur peut être jouer dans notre situation
                 if board.is_valid_move(Reversi.Board._BLACK, int(ligne), int(colonne)):
                     validmove = True
                     move = [1, int(ligne), int(colonne)]
@@ -146,8 +154,11 @@ for j in range(nombre_partie):
             # print("durée totale de recherche : ", time.time()-debut)
 
         else:
+            #Notre IA va choisir le meilleur coup à jouer.
+            #Elle aura 10 secondes maximum pour chercher dans l'arbre
+
             debut= time.time()
-            move = IAIterativeDeepening(board, 0.5, Reversi.Board._WHITE,debut)
+            move = IAIterativeDeepening(board, 10, Reversi.Board._WHITE,debut)
             print("durée totale de recherche : ", time.time()-debut)
 
         board.push(move)
