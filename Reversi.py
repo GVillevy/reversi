@@ -254,7 +254,7 @@ class Board:
         # faisais jouer l'IA noir contre l'IA blanc afin de trouver les meilleurs poids possibles)
         else:
             difjeton = self._nbBLACK - self._nbWHITE
-            #Si l'IA a plus de jeton que nous, il va jouer très aggressif
+            #Si l'IA a plus de jeton que nous, il va jouer très agressif
             if self._nbWHITE < self._nbBLACK:
                 
                 # Coins et Côtés
